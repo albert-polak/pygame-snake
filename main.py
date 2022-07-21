@@ -4,14 +4,29 @@ from sys import exit
 
 class Game:
     def __init__(self):
-        self.screen = None
         self._running = True
         self.game_name = 'Snake'
-        self.size = self.width, self.height = 640, 400
+        self.size = self.width, self.height = 800, 600
         self.clock = pygame.time.Clock()
+
+        self.espace_colour = 'darkred'
+        self.espace_size = 20
+        self.espace_dist = 1
+
+
+
+        self.grid_size = (20, 20)
+
+    def draw_map(self):
+        for x in range(5, self.grid_size[0]):
+            for y in range(5, self.grid_size[1]):
+                rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+                pygame.draw.rect(self.screen, self.espace_colour, rect)
+
 
     def on_loop(self):
         pygame.display.update()
+        self.draw_map()
         self.clock.tick(60)
 
     def on_init(self):
