@@ -8,6 +8,7 @@ class Snake:
         self.elements = [(10, 10), (10, 9), (10, 8)]
         self.snake_block_size = 15
         self.snake_colour = 'green'
+        self.snake_head_colour = 'darkgreen'
         self.direction = 'DOWN'
         self.velocity = 400
 
@@ -85,17 +86,24 @@ class Game:
     def draw_snake(self):
         x, y = self.snake.elements[0]
         rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
-        pygame.draw.rect(self.screen, self.snake.snake_colour, rect)
+        pygame.draw.rect(self.screen, self.snake.snake_head_colour, rect)
 
-        for element in self.snake.elements:
+        for element in self.snake.elements[1:]:
             x, y = element
             rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
             pygame.draw.rect(self.screen, self.snake.snake_colour, rect)
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
-        rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
+        rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
         pygame.draw.rect(self.screen, self.apple.apple_colour, rect)
+
+    def check_game_over(self):
+        if self.snake.elements[0][0] < 0 or self.snake.elements[0][0] >= self.grid_size[0] or self.snake.elements[0][1] < 0 or self.snake.elements[0][1] >= self.grid_size[1]:
+            print("GAME OVER")
+
+        if self.snake.elements[0] in self.snake.elements[1:]:
+            print("GAME OVER")
 
 
     def on_loop(self):
@@ -104,6 +112,7 @@ class Game:
         self.draw_snake()
         self.draw_apple()
         self.apple.check_if_eaten()
+        self.check_game_over()
         self.clock.tick(60)
 
     def on_init(self):
