@@ -37,9 +37,9 @@ class Snake:
 
 
 
-class Apple(Snake):
-    def __init__(self, grid_size):
-        Snake.__init__(self)
+class Apple:
+    def __init__(self, snake, grid_size):
+        self.snake = snake
         self.apple_pos = None
         self.apple_colour = 'red'
         self.grid_size = grid_size
@@ -47,9 +47,14 @@ class Apple(Snake):
 
     def add_apple(self):
         position = (random.randint(0, self.grid_size[0]-1), random.randint(0, self.grid_size[1]-1))
-        while any(position[:]) == position:
+        while position in self.snake.elements:
             position = (random.randint(0, self.grid_size[0]-1), random.randint(0, self.grid_size[1]-1))
         self.apple_pos = position
+
+    def check_if_eaten(self):
+        if self.apple_pos == self.snake.elements[0]:
+            self.add_apple()
+            self.snake.elements.append(self.snake.elements[-1])
 
 
 class Game:
@@ -69,7 +74,7 @@ class Game:
 
         self.snake = Snake()
 
-        self.apple = Apple(self.grid_size)
+        self.apple = Apple(self.snake, self.grid_size)
 
     def draw_map(self):
         for x in range(self.grid_size[0]):
@@ -98,6 +103,7 @@ class Game:
         self.draw_map()
         self.draw_snake()
         self.draw_apple()
+        self.apple.check_if_eaten()
         self.clock.tick(60)
 
     def on_init(self):
@@ -105,6 +111,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]))
         pygame.display.set_caption(self.game_name)
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
+        self.apple.add_apple()
         self._running = True
         if self.screen:
             return True
@@ -116,7 +123,7 @@ class Game:
             self._running = False
         if event.type == self.SCREEN_UPDATE:
             self.snake.update_snake_pos()
-            self.apple.add_apple()
+
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 self.snake.direction = 'LEFT'
