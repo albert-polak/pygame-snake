@@ -1,14 +1,15 @@
 import numpy
 import pygame
 from sys import exit
+import random
 
 class Snake:
     def __init__(self):
         self.elements = [(10, 10), (10, 9), (10, 8)]
         self.snake_block_size = 15
         self.snake_colour = 'green'
-        self.direction = 'UP'
-        self.velocity = 10
+        self.direction = 'DOWN'
+        self.velocity = 400
 
     def update_snake_pos(self):
         previous_pos = self.elements[0]
@@ -36,6 +37,21 @@ class Snake:
 
 
 
+class Apple(Snake):
+    def __init__(self, grid_size):
+        Snake.__init__(self)
+        self.apple_pos = None
+        self.apple_colour = 'red'
+        self.grid_size = grid_size
+        self.add_apple()
+
+    def add_apple(self):
+        position = (random.randint(0, self.grid_size[0]-1), random.randint(0, self.grid_size[1]-1))
+        while any(position[:]) == position:
+            position = (random.randint(0, self.grid_size[0]-1), random.randint(0, self.grid_size[1]-1))
+        self.apple_pos = position
+
+
 class Game:
     def __init__(self):
         self._running = True
@@ -43,7 +59,9 @@ class Game:
         self.size = self.width, self.height = 800, 600
         self.clock = pygame.time.Clock()
 
-        self.espace_colour = 'darkred'
+        self.grid_size = (20, 20)
+
+        self.espace_colour = 'blue'
         self.espace_size = 20
         self.espace_dist = 1
 
@@ -51,7 +69,7 @@ class Game:
 
         self.snake = Snake()
 
-        self.grid_size = (20, 20)
+        self.apple = Apple(self.grid_size)
 
     def draw_map(self):
         for x in range(self.grid_size[0]):
@@ -69,19 +87,24 @@ class Game:
             rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
             pygame.draw.rect(self.screen, self.snake.snake_colour, rect)
 
+    def draw_apple(self):
+        x, y = self.apple.apple_pos
+        rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
+        pygame.draw.rect(self.screen, self.apple.apple_colour, rect)
+
 
     def on_loop(self):
         pygame.display.update()
         self.draw_map()
         self.draw_snake()
-
+        self.draw_apple()
         self.clock.tick(60)
 
     def on_init(self):
         pygame.init()
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]))
         pygame.display.set_caption(self.game_name)
-        pygame.time.set_timer(self.SCREEN_UPDATE, 1000)
+        pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
         self._running = True
         if self.screen:
             return True
@@ -93,6 +116,7 @@ class Game:
             self._running = False
         if event.type == self.SCREEN_UPDATE:
             self.snake.update_snake_pos()
+            self.apple.add_apple()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LEFT:
                 self.snake.direction = 'LEFT'
@@ -118,6 +142,7 @@ class Game:
                 self.on_event(event)
             self.on_loop()
         self.on_quit()
+
 
 
 game = Game()
