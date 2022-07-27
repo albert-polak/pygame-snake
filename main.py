@@ -1,7 +1,8 @@
-import numpy
+import numpy as np
 import pygame
 from sys import exit
 import random
+
 
 class Snake:
     def __init__(self):
@@ -80,6 +81,8 @@ class Game:
         self.espace_dist = 1
 
         self.SCREEN_UPDATE = pygame.USEREVENT
+        self.key_time = pygame.time.get_ticks()
+        self.key_buffer = []
 
         self.snake = Snake()
 
@@ -124,6 +127,17 @@ class Game:
             print("GAME OVER")
             self.on_init()
 
+    def key_update(self):
+        if self.key_buffer:
+            key = self.key_buffer.pop(0)
+            if key == 'LEFT' and self.snake.direction != 'RIGHT':
+                self.snake.direction = 'LEFT'
+            elif key == 'RIGHT' and self.snake.direction != 'LEFT':
+                self.snake.direction = 'RIGHT'
+            elif key == 'UP' and self.snake.direction != 'DOWN':
+                self.snake.direction = 'UP'
+            elif key == 'DOWN' and self.snake.direction != 'UP':
+                self.snake.direction = 'DOWN'
 
     def on_loop(self):
         pygame.display.update()
@@ -131,6 +145,7 @@ class Game:
         self.draw_map()
         self.draw_snake()
         self.draw_apple()
+
 
         if self.apple.check_if_eaten():
             self.snake.velocity -= 10
@@ -165,20 +180,40 @@ class Game:
             return False
 
     def on_event(self, event):
+
         if event.type == pygame.QUIT:
             self._running = False
         if event.type == self.SCREEN_UPDATE:
+            self.key_update()
             self.snake.update_snake_pos()
 
         if event.type == pygame.KEYDOWN:
+            # if pygame.time.get_ticks() - self.key_time > self.snake.velocity:
+            #     if event.key == pygame.K_LEFT and self.snake.direction != 'RIGHT':
+            #         self.key_time = pygame.time.get_ticks()
+            #         self.snake.direction = 'LEFT'
+            #     elif event.key == pygame.K_RIGHT and self.snake.direction != 'LEFT':
+            #         self.key_time = pygame.time.get_ticks()
+            #         self.snake.direction = 'RIGHT'
+            #     elif event.key == pygame.K_UP and self.snake.direction != 'DOWN':
+            #         self.key_time = pygame.time.get_ticks()
+            #         self.snake.direction = 'UP'
+            #     elif event.key == pygame.K_DOWN and self.snake.direction != 'UP':
+            #         self.key_time = pygame.time.get_ticks()
+            #         self.snake.direction = 'DOWN'
             if event.key == pygame.K_LEFT:
-                self.snake.direction = 'LEFT'
-            if event.key == pygame.K_RIGHT:
-                self.snake.direction = 'RIGHT'
-            if event.key == pygame.K_UP:
-                self.snake.direction = 'UP'
-            if event.key == pygame.K_DOWN:
-                self.snake.direction = 'DOWN'
+                if len(self.key_buffer) < 2:
+                    self.key_buffer.append('LEFT')
+            elif event.key == pygame.K_RIGHT:
+                if len(self.key_buffer) < 2:
+                    self.key_buffer.append('RIGHT')
+            elif event.key == pygame.K_UP:
+                if len(self.key_buffer) < 2:
+                    self.key_buffer.append('UP')
+            elif event.key == pygame.K_DOWN:
+                if len(self.key_buffer) < 2:
+                    self.key_buffer.append('DOWN')
+
 
 
 
