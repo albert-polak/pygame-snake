@@ -98,17 +98,20 @@ class Game:
 
     def draw_snake(self):
         x, y = self.snake.elements[0]
-        rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
+        rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+        rect = rect.inflate(-5, -5)
         pygame.draw.rect(self.screen, self.snake.snake_head_colour, rect)
 
         for element in self.snake.elements[1:]:
             x, y = element
-            rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.snake.snake_block_size, self.snake.snake_block_size)
+            rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+            rect = rect.inflate(-5, -5)
             pygame.draw.rect(self.screen, self.snake.snake_colour, rect)
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
         rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+        rect = rect.inflate(-10, -10)
         pygame.draw.rect(self.screen, self.apple.apple_colour, rect)
 
     def check_game_over(self):
@@ -121,14 +124,19 @@ class Game:
 
     def on_loop(self):
         pygame.display.update()
+        self.screen.fill('BLACK')
         self.draw_map()
         self.draw_snake()
         self.draw_apple()
+
         if self.apple.check_if_eaten():
             self.snake.velocity -= 10
             if self.snake.velocity <= 0:
                 self.snake.velocity = 1
             pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
+            self.score = len(self.snake.elements)
+            self.score_surface = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
+
         self.check_game_over()
         self.clock.tick(60)
 
