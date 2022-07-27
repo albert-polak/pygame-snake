@@ -56,6 +56,10 @@ class Apple:
         if self.apple_pos == self.snake.elements[0]:
             self.add_apple()
             self.snake.elements.append(self.snake.elements[-1])
+            return True
+        else:
+            return False
+
 
 
 class Game:
@@ -64,6 +68,10 @@ class Game:
         self.game_name = 'Snake'
         self.size = self.width, self.height = 800, 600
         self.clock = pygame.time.Clock()
+
+        pygame.font.init()
+
+        self.font = pygame.font.SysFont('arial', 20)
 
         self.grid_size = (20, 20)
 
@@ -77,11 +85,16 @@ class Game:
 
         self.apple = Apple(self.snake, self.grid_size)
 
+        self.score = len(self.snake.elements)
+        self.score_surface = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
+
     def draw_map(self):
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
                 pygame.draw.rect(self.screen, self.espace_colour, rect)
+
+        self.screen.blit(self.score_surface, (600, 0))
 
     def draw_snake(self):
         x, y = self.snake.elements[0]
@@ -111,12 +124,18 @@ class Game:
         self.draw_map()
         self.draw_snake()
         self.draw_apple()
-        self.apple.check_if_eaten()
+        if self.apple.check_if_eaten():
+            self.snake.velocity -= 10
+            if self.snake.velocity <= 0:
+                self.snake.velocity = 1
+            pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
         self.check_game_over()
         self.clock.tick(60)
 
     def on_init(self):
         pygame.init()
+
+
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]))
         pygame.display.set_caption(self.game_name)
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
