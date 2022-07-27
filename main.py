@@ -163,9 +163,10 @@ class Game:
 
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]))
         pygame.display.set_caption(self.game_name)
+        self.snake = Snake()
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
 
-        self.snake = Snake()
+
 
         self.apple = Apple(self.snake, self.grid_size)
 
