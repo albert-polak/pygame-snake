@@ -92,6 +92,7 @@ class Game:
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+
                 pygame.draw.rect(self.screen, self.espace_colour, rect)
 
         self.screen.blit(self.score_surface, (600, 0))
@@ -117,9 +118,11 @@ class Game:
     def check_game_over(self):
         if self.snake.elements[0][0] < 0 or self.snake.elements[0][0] >= self.grid_size[0] or self.snake.elements[0][1] < 0 or self.snake.elements[0][1] >= self.grid_size[1]:
             print("GAME OVER")
+            self.on_init()
 
         if self.snake.elements[0] in self.snake.elements[1:]:
             print("GAME OVER")
+            self.on_init()
 
 
     def on_loop(self):
@@ -143,10 +146,17 @@ class Game:
     def on_init(self):
         pygame.init()
 
-
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]))
         pygame.display.set_caption(self.game_name)
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
+
+        self.snake = Snake()
+
+        self.apple = Apple(self.snake, self.grid_size)
+
+        self.score = len(self.snake.elements)
+        self.score_surface = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
+
         self.apple.add_apple()
         self._running = True
         if self.screen:
