@@ -8,10 +8,21 @@ class Snake:
     def __init__(self):
         self.elements = [(10, 10), (10, 9), (10, 8)]
 
+        self.head_surface_og = pygame.transform.scale(pygame.image.load('data/head-1.png').convert_alpha(), (32, 32))
+        self.head_surface = self.head_surface_og.copy()
+
+        self.tail_surface_og = pygame.transform.scale(pygame.image.load('data/tail-1.png').convert_alpha(), (32, 32))
+        self.tail_surface = self.tail_surface_og.copy()
+
+        self.tongue_surface = pygame.transform.scale(pygame.image.load('data/tongue-1.png').convert_alpha(), (32, 32))
+        self.body_surface =  pygame.transform.scale(pygame.image.load('data/body-1.png').convert_alpha(), (32, 32))
+
         self.snake_colour = 'green'
         self.snake_head_colour = 'darkgreen'
         self.direction = 'DOWN'
         self.velocity = 400
+
+        self.eaten_flag = False
 
     def update_snake_pos(self):
         previous_pos = self.elements[0]
@@ -37,6 +48,27 @@ class Snake:
                 self.elements[idx+1] = previous_pos
                 previous_pos = pos
 
+    def update_head_orientation(self):
+        if self.direction == 'LEFT':
+            self.head_surface = pygame.transform.rotate(self.head_surface_og, 90)
+        elif self.direction == 'RIGHT':
+            self.head_surface = pygame.transform.rotate(self.head_surface_og, 270)
+        elif self.direction == 'UP':
+            self.head_surface = self.head_surface_og
+        elif self.direction == 'DOWN':
+            self.head_surface = pygame.transform.rotate(self.head_surface_og, 180)
+
+    def update_tail_orientation(self):
+        tail_realtion = (self.elements[-2][0] - self.elements[-1][0], self.elements[-2][1] - self.elements[-1][1])
+        if tail_realtion == (-1, 0):
+            self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 90)
+        elif tail_realtion == (1, 0):
+            self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 270)
+        elif tail_realtion == (0, -1):
+            self.tail_surface = self.tail_surface_og
+        elif tail_realtion == (0, 1):
+            self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 180)
+
 
 
 class Apple:
@@ -45,6 +77,10 @@ class Apple:
         self.apple_pos = None
         self.apple_colour = 'red'
         self.grid_size = grid_size
+
+
+        self.apple_surface = pygame.transform.scale(pygame.image.load('data/apple-1.png').convert_alpha(), (32, 32))
+
         self.add_apple()
 
     def add_apple(self):
@@ -67,9 +103,9 @@ class Game:
     def __init__(self):
         self._running = True
         self.game_name = 'Snake'
-        self.size = self.width, self.height = 800, 600
+        self.size = self.width, self.height = 800, 700
         self.clock = pygame.time.Clock()
-
+        self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.RESIZABLE)
         pygame.font.init()
 
         self.font = pygame.font.SysFont('arial', 20)
@@ -77,7 +113,7 @@ class Game:
         self.grid_size = (20, 20)
 
         self.espace_colour = 'blue'
-        self.espace_size = 20
+        self.espace_size = 32
         self.espace_dist = 1
 
         self.SCREEN_UPDATE = pygame.USEREVENT
@@ -103,20 +139,32 @@ class Game:
     def draw_snake(self):
         x, y = self.snake.elements[0]
         rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
-        rect = rect.inflate(-5, -5)
-        pygame.draw.rect(self.object_screen, self.snake.snake_head_colour, rect)
 
-        for element in self.snake.elements[1:]:
+        # pygame.draw.rect(self.object_screen, self.snake.snake_head_colour, rect)
+        # rect = rect.inflate(-5, -5)
+
+        self.snake.update_head_orientation()
+        self.snake.update_tail_orientation()
+        self.object_screen.blit(self.snake.head_surface, rect)
+
+        for idx, element in enumerate(self.snake.elements[1:]):
             x, y = element
             rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
-            rect = rect.inflate(-5, -5)
-            pygame.draw.rect(self.object_screen, self.snake.snake_colour, rect)
+            # rect = rect.inflate(-5, -5)
+            # pygame.draw.rect(self.object_screen, self.snake.snake_colour, rect)
+            if idx == len(self.snake.elements)-2:
+                self.object_screen.blit(self.snake.tail_surface, rect)
+            elif idx == len(self.snake.elements)-3 and self.snake.eaten_flag:
+                pass
+            else:
+                self.object_screen.blit(self.snake.body_surface, rect)
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
         rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
-        rect = rect.inflate(-10, -10)
-        pygame.draw.rect(self.object_screen, self.apple.apple_colour, rect)
+        # rect = rect.inflate(-10, -10)
+        # pygame.draw.rect(self.object_screen, self.apple.apple_colour, rect)
+        self.object_screen.blit(self.apple.apple_surface, rect)
 
     def check_game_over(self):
         if self.snake.elements[0][0] < 0 or self.snake.elements[0][0] >= self.grid_size[0] or self.snake.elements[0][1] < 0 or self.snake.elements[0][1] >= self.grid_size[1]:
@@ -190,6 +238,10 @@ class Game:
         if event.type == self.SCREEN_UPDATE:
             self.key_update()
             self.snake.update_snake_pos()
+            if self.apple.check_if_eaten():
+                self.snake.eaten_flag = True
+            else:
+                self.snake.eaten_flag = False
 
         if event.type == pygame.KEYDOWN:
             # if pygame.time.get_ticks() - self.key_time > self.snake.velocity:
