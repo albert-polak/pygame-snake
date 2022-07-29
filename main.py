@@ -7,7 +7,7 @@ import random
 class Snake:
     def __init__(self):
         self.elements = [(10, 10), (10, 9), (10, 8)]
-        self.snake_block_size = 15
+
         self.snake_colour = 'green'
         self.snake_head_colour = 'darkgreen'
         self.direction = 'DOWN'
@@ -96,27 +96,27 @@ class Game:
             for y in range(self.grid_size[1]):
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
 
-                pygame.draw.rect(self.screen, self.espace_colour, rect)
+                pygame.draw.rect(self.object_screen, self.espace_colour, rect)
 
-        self.screen.blit(self.score_surface, (600, 0))
+        self.object_screen.blit(self.score_surface, (600, 0))
 
     def draw_snake(self):
         x, y = self.snake.elements[0]
         rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
         rect = rect.inflate(-5, -5)
-        pygame.draw.rect(self.screen, self.snake.snake_head_colour, rect)
+        pygame.draw.rect(self.object_screen, self.snake.snake_head_colour, rect)
 
         for element in self.snake.elements[1:]:
             x, y = element
             rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
             rect = rect.inflate(-5, -5)
-            pygame.draw.rect(self.screen, self.snake.snake_colour, rect)
+            pygame.draw.rect(self.object_screen, self.snake.snake_colour, rect)
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
         rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
         rect = rect.inflate(-10, -10)
-        pygame.draw.rect(self.screen, self.apple.apple_colour, rect)
+        pygame.draw.rect(self.object_screen, self.apple.apple_colour, rect)
 
     def check_game_over(self):
         if self.snake.elements[0][0] < 0 or self.snake.elements[0][0] >= self.grid_size[0] or self.snake.elements[0][1] < 0 or self.snake.elements[0][1] >= self.grid_size[1]:
@@ -141,11 +141,13 @@ class Game:
 
     def on_loop(self):
         pygame.display.update()
-        self.screen.fill('BLACK')
+        self.object_screen.fill('BLACK')
+
         self.draw_map()
         self.draw_snake()
         self.draw_apple()
 
+        self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (0, 0))
 
         if self.apple.check_if_eaten():
             self.snake.velocity -= 10
@@ -161,7 +163,8 @@ class Game:
     def on_init(self):
         pygame.init()
 
-        self.screen = pygame.display.set_mode((self.size[0], self.size[1]))
+        self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.RESIZABLE)
+        self.object_screen = self.screen.copy()
         pygame.display.set_caption(self.game_name)
         self.snake = Snake()
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
@@ -214,6 +217,11 @@ class Game:
             elif event.key == pygame.K_DOWN:
                 if len(self.key_buffer) < 2:
                     self.key_buffer.append('DOWN')
+
+        if event.type == pygame.VIDEORESIZE:
+            # There's some code to add back window content here.
+            self.screen = pygame.display.set_mode((event.w, event.h),
+                                              pygame.RESIZABLE)
 
 
 
