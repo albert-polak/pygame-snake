@@ -148,6 +148,8 @@ class Game:
         self.espace_size = 32
         self.espace_dist = 1
 
+        self.tile_surface = pygame.transform.scale(pygame.image.load('data/tile-1.png').convert_alpha(), (32, 32))
+
         self.SCREEN_UPDATE = pygame.USEREVENT
         self.key_time = pygame.time.get_ticks()
         self.key_buffer = []
@@ -163,8 +165,8 @@ class Game:
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
-
-                pygame.draw.rect(self.object_screen, self.espace_colour, rect)
+                self.object_screen.blit(self.tile_surface, rect)
+                # pygame.draw.rect(self.object_screen, self.espace_colour, rect)
 
         self.object_screen.blit(self.score_surface, (600, 0))
 
@@ -238,9 +240,6 @@ class Game:
         self.draw_apple()
 
         self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (0, 0))
-
-
-
 
         self.check_game_over()
         self.clock.tick(60)
