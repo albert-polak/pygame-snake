@@ -148,7 +148,9 @@ class Game:
         self.espace_size = 32
         self.espace_dist = 1
 
-        self.tile_surface = pygame.transform.scale(pygame.image.load('data/tile-1.png').convert_alpha(), (32, 32))
+        self.tile1_surface = pygame.transform.scale(pygame.image.load('data/tile-1.png').convert_alpha(), (32, 32))
+        self.tile2_surface = pygame.transform.scale(pygame.image.load('data/tile-2.png').convert_alpha(), (32, 32))
+        self.random_map = []
 
         self.SCREEN_UPDATE = pygame.USEREVENT
         self.key_time = pygame.time.get_ticks()
@@ -161,11 +163,18 @@ class Game:
         self.score = len(self.snake.elements)
         self.score_surface = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
 
+    def randomize_map(self):
+        for x in range(self.grid_size[0]*self.grid_size[1]):
+            self.random_map.append(random.random())
+
     def draw_map(self):
         for x in range(self.grid_size[0]):
             for y in range(self.grid_size[1]):
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
-                self.object_screen.blit(self.tile_surface, rect)
+                if self.random_map[x + y * self.grid_size[1]] < 0.3:
+                    self.object_screen.blit(self.tile2_surface, rect)
+                else:
+                    self.object_screen.blit(self.tile1_surface, rect)
                 # pygame.draw.rect(self.object_screen, self.espace_colour, rect)
 
         self.object_screen.blit(self.score_surface, (600, 0))
@@ -250,10 +259,9 @@ class Game:
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.RESIZABLE)
         self.object_screen = self.screen.copy()
         pygame.display.set_caption(self.game_name)
+        self.randomize_map()
         self.snake = Snake()
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
-
-
 
         self.apple = Apple(self.snake, self.grid_size)
 
