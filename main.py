@@ -50,7 +50,6 @@ class Snake:
             tmp = self.elements[0][0] + 1
             self.elements[0] = (tmp, self.elements[0][1])
 
-
         if len(self.elements) > 1:
             for idx, pos in enumerate(self.elements[1:]):
                 self.elements[idx+1] = previous_pos
@@ -135,11 +134,13 @@ class Apple:
 
 class Game:
     def __init__(self):
+
         self._running = True
         self.game_name = 'Snake'
-        self.size = self.width, self.height = 800, 700
+        self.size = self.width, self.height = 800, 600
         self.clock = pygame.time.Clock()
-        self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
+        self.object_screen = self.screen.copy()
         pygame.font.init()
 
         self.font = pygame.font.SysFont('arial', 20)
@@ -149,6 +150,8 @@ class Game:
         self.espace_colour = 'blue'
         self.espace_size = 32
         self.espace_dist = 1
+
+        self.bg_surface = pygame.transform.scale(pygame.image.load('data/bg.png').convert_alpha(), (800, 600))
 
         self.tile1_surface = pygame.transform.scale(pygame.image.load('data/tile-1.png').convert_alpha(), (32, 32))
         self.tile2_surface = pygame.transform.scale(pygame.image.load('data/tile-2.png').convert_alpha(), (32, 32))
@@ -192,14 +195,14 @@ class Game:
                     self.object_screen.blit(self.tile1_surface, rect)
                 # pygame.draw.rect(self.object_screen, self.espace_colour, rect)
 
-        self.object_screen.blit(self.score_surface, (600, 0))
+        self.object_screen.blit(self.score_surface, (450, 0))
 
     def draw_snake(self):
 
         self.snake.update_head_orientation()
         self.snake.update_tail_orientation()
 
-        prev_element = self.snake.elements[0]
+
         for idx, element in enumerate(self.snake.elements):
 
             if idx == 0:
@@ -225,7 +228,6 @@ class Game:
 
                     self.object_screen.blit(self.snake.body_surface, rect)
 
-            prev_element = element
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
@@ -257,23 +259,25 @@ class Game:
 
     def on_loop(self):
         pygame.display.update()
-        self.object_screen.fill('BLACK')
+        # self.object_screen.fill('BLACK')
+        self.object_screen.convert_alpha()
+        self.object_screen.fill((0, 0, 0, 0))
+        # self.object_screen.blit(self.bg_surface, (-100, -100))
+        self.object_screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (-120, -100))
+        self.screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (0, 0))
 
         self.draw_map()
         self.draw_snake()
         self.draw_apple()
-
-
-        self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (100, 100))
+        self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (120, 100))
 
         self.check_game_over()
+        pygame.display.flip()
         self.clock.tick(60)
 
     def on_init(self):
         pygame.init()
 
-        self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.RESIZABLE)
-        self.object_screen = self.screen.copy()
         pygame.display.set_caption(self.game_name)
         self.randomize_map()
         self.snake = Snake(self.grid_size)
@@ -338,6 +342,7 @@ class Game:
 
         if event.type == pygame.VIDEORESIZE:
             # There's some code to add back window content here.
+            self.size = (event.w, event.h)
             self.screen = pygame.display.set_mode((event.w, event.h),
                                               pygame.RESIZABLE)
 
