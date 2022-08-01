@@ -6,9 +6,9 @@ import random
 
 class Snake:
     def __init__(self, grid_size):
-        self.elements = [(np.ceil(grid_size[0]/2), np.ceil(grid_size[1]/2)),
-                         (np.ceil(grid_size[0]/2), np.ceil(grid_size[1]/2)-1),
-                         (np.ceil(grid_size[0]/2), np.ceil(grid_size[1]/2)-2)]
+        self.elements = [(np.ceil(grid_size[0] / 2), np.ceil(grid_size[1] / 2)),
+                         (np.ceil(grid_size[0] / 2), np.ceil(grid_size[1] / 2) - 1),
+                         (np.ceil(grid_size[0] / 2), np.ceil(grid_size[1] / 2) - 2)]
 
         self.head_surface_og = pygame.transform.scale(pygame.image.load('data/head-1.png').convert_alpha(), (32, 32))
         self.head_surface = self.head_surface_og.copy()
@@ -16,7 +16,12 @@ class Snake:
         self.tail_surface_og = pygame.transform.scale(pygame.image.load('data/tail-1.png').convert_alpha(), (32, 32))
         self.tail_surface = self.tail_surface_og.copy()
 
-        self.tongue_surface = pygame.transform.scale(pygame.image.load('data/tongue-1.png').convert_alpha(), (32, 32))
+        self.tongue1_surface_og = pygame.transform.scale(pygame.image.load('data/tongue-1.png').convert_alpha(), (32, 32))
+        self.tongue_surface_og = self.tongue1_surface_og.copy()
+        self.tongue_surface = self.tongue1_surface_og.copy()
+        self.tongue2_surface_og = pygame.transform.scale(pygame.image.load('data/tongue-2.png').convert_alpha(), (32, 32))
+
+        self.tongue3_surface_og = pygame.transform.scale(pygame.image.load('data/tongue-3.png').convert_alpha(), (32, 32))
 
         self.body_surface_og = pygame.transform.scale(pygame.image.load('data/body-1.png').convert_alpha(), (32, 32))
         self.body_surface = self.body_surface_og.copy()
@@ -29,6 +34,7 @@ class Snake:
         self.snake_head_colour = 'darkgreen'
         self.direction = 'DOWN'
         self.velocity = 400
+        self.tongue_visibility = False
 
         self.eaten_flag = False
 
@@ -52,7 +58,7 @@ class Snake:
 
         if len(self.elements) > 1:
             for idx, pos in enumerate(self.elements[1:]):
-                self.elements[idx+1] = previous_pos
+                self.elements[idx + 1] = previous_pos
                 previous_pos = pos
 
     def update_head_orientation(self):
@@ -64,6 +70,19 @@ class Snake:
             self.head_surface = self.head_surface_og
         elif self.direction == 'DOWN':
             self.head_surface = pygame.transform.rotate(self.head_surface_og, 180)
+
+    def update_tongue_orientation(self):
+        if self.direction == 'LEFT':
+            self.tongue_surface = pygame.transform.rotate(self.tongue_surface_og, 90)
+
+        elif self.direction == 'RIGHT':
+            self.tongue_surface = pygame.transform.rotate(self.tongue_surface_og, 270)
+
+        elif self.direction == 'UP':
+            self.tongue_surface = self.tongue_surface_og
+
+        elif self.direction == 'DOWN':
+            self.tongue_surface = pygame.transform.rotate(self.tongue_surface_og, 180)
 
     def update_tail_orientation(self):
         tail_relation = (self.elements[-2][0] - self.elements[-1][0], self.elements[-2][1] - self.elements[-1][1])
@@ -111,15 +130,14 @@ class Apple:
         self.apple_colour = 'red'
         self.grid_size = grid_size
 
-
         self.apple_surface = pygame.transform.scale(pygame.image.load('data/apple-1.png').convert_alpha(), (32, 32))
 
         self.add_apple()
 
     def add_apple(self):
-        position = (random.randint(0, self.grid_size[0]-1), random.randint(0, self.grid_size[1]-1))
+        position = (random.randint(0, self.grid_size[0] - 1), random.randint(0, self.grid_size[1] - 1))
         while position in self.snake.elements:
-            position = (random.randint(0, self.grid_size[0]-1), random.randint(0, self.grid_size[1]-1))
+            position = (random.randint(0, self.grid_size[0] - 1), random.randint(0, self.grid_size[1] - 1))
         self.apple_pos = position
 
     def check_if_eaten(self):
@@ -129,7 +147,6 @@ class Apple:
             return True
         else:
             return False
-
 
 
 class Game:
@@ -162,7 +179,8 @@ class Game:
         self.random_map = []
 
         self.SCREEN_UPDATE = pygame.USEREVENT
-        self.key_time = pygame.time.get_ticks()
+        self.TONGUE_UPDATE = pygame.USEREVENT
+        self.tongue_time = pygame.time.get_ticks()
         self.key_buffer = []
 
         self.snake = Snake(self.grid_size)
@@ -174,7 +192,7 @@ class Game:
 
     def randomize_map(self):
         self.random_map = []
-        for x in range(self.grid_size[0]*self.grid_size[1]):
+        for x in range(self.grid_size[0] * self.grid_size[1]):
             self.random_map.append(random.random())
 
     def draw_map(self):
@@ -197,11 +215,44 @@ class Game:
 
         self.object_screen.blit(self.score_surface, (450, 0))
 
+    def change_tongue(self):
+        if 1000 > pygame.time.get_ticks() - self.tongue_time > 1:
+            self.snake.tongue_visibility = False
+
+        elif 2000 > pygame.time.get_ticks() - self.tongue_time >= 1000:
+            self.snake.tongue_visibility = True
+            self.snake.tongue_surface_og = self.snake.tongue1_surface_og
+
+        elif 2400 > pygame.time.get_ticks() - self.tongue_time >= 2000:
+            self.snake.tongue_surface_og = self.snake.tongue2_surface_og
+
+        elif 3000 > pygame.time.get_ticks() - self.tongue_time >= 2400:
+            self.snake.tongue_surface_og = self.snake.tongue3_surface_og
+
+        elif pygame.time.get_ticks() - self.tongue_time >= 3001:
+            self.tongue_time = pygame.time.get_ticks()
+
+
+    def draw_tongue(self):
+        self.snake.update_tongue_orientation()
+        x, y = 0, 0
+        if self.snake.direction == 'LEFT':
+            x, y = self.snake.elements[0][0] - 1, self.snake.elements[0][1]
+        elif self.snake.direction == 'RIGHT':
+            x, y = self.snake.elements[0][0] + 1, self.snake.elements[0][1]
+        elif self.snake.direction == 'UP':
+            x, y = self.snake.elements[0][0], self.snake.elements[0][1] - 1
+        elif self.snake.direction == 'DOWN':
+            x, y = self.snake.elements[0][0], self.snake.elements[0][1] + 1
+        if 0 <= x < self.grid_size[0] and 0 <= y < self.grid_size[1]:
+            rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+            if self.snake.tongue_visibility:
+                self.object_screen.blit(self.snake.tongue_surface, rect)
+
     def draw_snake(self):
 
         self.snake.update_head_orientation()
         self.snake.update_tail_orientation()
-
 
         for idx, element in enumerate(self.snake.elements):
 
@@ -215,10 +266,10 @@ class Game:
                 # rect = rect.inflate(-5, -5)
                 # pygame.draw.rect(self.object_screen, self.snake.snake_colour, rect)
 
-                if idx == len(self.snake.elements)-1:
+                if idx == len(self.snake.elements) - 1:
 
                     self.object_screen.blit(self.snake.tail_surface, rect)
-                elif idx == len(self.snake.elements)-2 and self.snake.eaten_flag:
+                elif idx == len(self.snake.elements) - 2 and self.snake.eaten_flag:
                     self.snake.update_tail2_orientation()
                     x, y = element
                     rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
@@ -227,7 +278,6 @@ class Game:
                     self.snake.update_body_orientation(idx - 1, idx, idx + 1)
 
                     self.object_screen.blit(self.snake.body_surface, rect)
-
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
@@ -268,6 +318,8 @@ class Game:
 
         self.draw_map()
         self.draw_snake()
+        self.change_tongue()
+        self.draw_tongue()
         self.draw_apple()
         self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (120, 100))
 
@@ -344,10 +396,7 @@ class Game:
             # There's some code to add back window content here.
             self.size = (event.w, event.h)
             self.screen = pygame.display.set_mode((event.w, event.h),
-                                              pygame.RESIZABLE)
-
-
-
+                                                  pygame.RESIZABLE)
 
     def on_quit(self):
         pygame.quit()
@@ -362,7 +411,6 @@ class Game:
                 self.on_event(event)
             self.on_loop()
         self.on_quit()
-
 
 
 game = Game()
