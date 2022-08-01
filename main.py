@@ -5,8 +5,10 @@ import random
 
 
 class Snake:
-    def __init__(self):
-        self.elements = [(10, 10), (10, 9), (10, 8)]
+    def __init__(self, grid_size):
+        self.elements = [(np.ceil(grid_size[0]/2), np.ceil(grid_size[1]/2)),
+                         (np.ceil(grid_size[0]/2), np.ceil(grid_size[1]/2)-1),
+                         (np.ceil(grid_size[0]/2), np.ceil(grid_size[1]/2)-2)]
 
         self.head_surface_og = pygame.transform.scale(pygame.image.load('data/head-1.png').convert_alpha(), (32, 32))
         self.head_surface = self.head_surface_og.copy()
@@ -65,25 +67,25 @@ class Snake:
             self.head_surface = pygame.transform.rotate(self.head_surface_og, 180)
 
     def update_tail_orientation(self):
-        tail_realtion = (self.elements[-2][0] - self.elements[-1][0], self.elements[-2][1] - self.elements[-1][1])
-        if tail_realtion == (-1, 0):
+        tail_relation = (self.elements[-2][0] - self.elements[-1][0], self.elements[-2][1] - self.elements[-1][1])
+        if tail_relation == (-1, 0):
             self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 90)
-        elif tail_realtion == (1, 0):
+        elif tail_relation == (1, 0):
             self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 270)
-        elif tail_realtion == (0, -1):
+        elif tail_relation == (0, -1):
             self.tail_surface = self.tail_surface_og
-        elif tail_realtion == (0, 1):
+        elif tail_relation == (0, 1):
             self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 180)
 
     def update_tail2_orientation(self):
-        tail_realtion = (self.elements[-3][0] - self.elements[-2][0], self.elements[-3][1] - self.elements[-2][1])
-        if tail_realtion == (-1, 0):
+        tail_relation = (self.elements[-3][0] - self.elements[-2][0], self.elements[-3][1] - self.elements[-2][1])
+        if tail_relation == (-1, 0):
             self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 90)
-        elif tail_realtion == (1, 0):
+        elif tail_relation == (1, 0):
             self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 270)
-        elif tail_realtion == (0, -1):
+        elif tail_relation == (0, -1):
             self.tail_surface = self.tail_surface_og
-        elif tail_realtion == (0, 1):
+        elif tail_relation == (0, 1):
             self.tail_surface = pygame.transform.rotate(self.tail_surface_og, 180)
 
     def update_body_orientation(self, prev, curr, next):
@@ -142,7 +144,7 @@ class Game:
 
         self.font = pygame.font.SysFont('arial', 20)
 
-        self.grid_size = (20, 20)
+        self.grid_size = (12, 12)
 
         self.espace_colour = 'blue'
         self.espace_size = 32
@@ -150,13 +152,17 @@ class Game:
 
         self.tile1_surface = pygame.transform.scale(pygame.image.load('data/tile-1.png').convert_alpha(), (32, 32))
         self.tile2_surface = pygame.transform.scale(pygame.image.load('data/tile-2.png').convert_alpha(), (32, 32))
+        self.tile3_surface = pygame.transform.scale(pygame.image.load('data/tile-3.png').convert_alpha(), (32, 32))
+        self.tile4_surface = pygame.transform.scale(pygame.image.load('data/tile-4.png').convert_alpha(), (32, 32))
+        self.tile5_surface = pygame.transform.scale(pygame.image.load('data/tile-5.png').convert_alpha(), (32, 32))
+        self.tile6_surface = pygame.transform.scale(pygame.image.load('data/tile-6.png').convert_alpha(), (32, 32))
         self.random_map = []
 
         self.SCREEN_UPDATE = pygame.USEREVENT
         self.key_time = pygame.time.get_ticks()
         self.key_buffer = []
 
-        self.snake = Snake()
+        self.snake = Snake(self.grid_size)
 
         self.apple = Apple(self.snake, self.grid_size)
 
@@ -164,6 +170,7 @@ class Game:
         self.score_surface = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
 
     def randomize_map(self):
+        self.random_map = []
         for x in range(self.grid_size[0]*self.grid_size[1]):
             self.random_map.append(random.random())
 
@@ -173,6 +180,14 @@ class Game:
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
                 if self.random_map[x + y * self.grid_size[1]] < 0.3:
                     self.object_screen.blit(self.tile2_surface, rect)
+                elif 0.78 > self.random_map[x + y * self.grid_size[1]] > 0.76:
+                    self.object_screen.blit(self.tile6_surface, rect)
+                elif 0.80 > self.random_map[x + y * self.grid_size[1]] > 0.78:
+                    self.object_screen.blit(self.tile5_surface, rect)
+                elif 0.98 > self.random_map[x + y * self.grid_size[1]] > 0.80:
+                    self.object_screen.blit(self.tile4_surface, rect)
+                elif self.random_map[x + y * self.grid_size[1]] > 0.98:
+                    self.object_screen.blit(self.tile3_surface, rect)
                 else:
                     self.object_screen.blit(self.tile1_surface, rect)
                 # pygame.draw.rect(self.object_screen, self.espace_colour, rect)
@@ -248,7 +263,8 @@ class Game:
         self.draw_snake()
         self.draw_apple()
 
-        self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (0, 0))
+
+        self.screen.blit(pygame.transform.scale(self.object_screen, self.screen.get_rect().size), (100, 100))
 
         self.check_game_over()
         self.clock.tick(60)
@@ -260,7 +276,7 @@ class Game:
         self.object_screen = self.screen.copy()
         pygame.display.set_caption(self.game_name)
         self.randomize_map()
-        self.snake = Snake()
+        self.snake = Snake(self.grid_size)
         pygame.time.set_timer(self.SCREEN_UPDATE, self.snake.velocity)
 
         self.apple = Apple(self.snake, self.grid_size)
