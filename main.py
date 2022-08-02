@@ -36,6 +36,8 @@ class Snake:
         self.velocity = 400
         self.tongue_visibility = False
 
+        self.hiss_sound = pygame.mixer.Sound('data/sounds/hiss.wav')
+
         self.eaten_flag = False
 
     def update_snake_pos(self):
@@ -131,6 +133,7 @@ class Apple:
         self.grid_size = grid_size
 
         self.apple_surface = pygame.transform.scale(pygame.image.load('data/apple-1.png').convert_alpha(), (32, 32))
+        self.eat_apple_sound = pygame.mixer.Sound('data/sounds/eat_apple1.wav')
 
         self.add_apple()
 
@@ -143,6 +146,7 @@ class Apple:
     def check_if_eaten(self):
         if self.apple_pos == self.snake.elements[0]:
             self.add_apple()
+            self.eat_apple_sound.play()
             self.snake.elements.append(self.snake.elements[-1])
             return True
         else:
@@ -159,6 +163,7 @@ class Game:
         self.screen = pygame.display.set_mode((self.size[0], self.size[1]), pygame.HWSURFACE | pygame.DOUBLEBUF | pygame.RESIZABLE)
         self.object_screen = self.screen.copy()
         pygame.font.init()
+        pygame.mixer.init()
 
         self.font = pygame.font.SysFont('arial', 20)
 
@@ -186,6 +191,8 @@ class Game:
         self.snake = Snake(self.grid_size)
 
         self.apple = Apple(self.snake, self.grid_size)
+
+        self.start_sound = pygame.mixer.Sound('data/sounds/game_start.wav')
 
         self.score = len(self.snake.elements)
         self.score_surface = self.font.render(f'Score: {self.score}', True, (255, 255, 255))
@@ -221,6 +228,7 @@ class Game:
 
         elif 2000 > pygame.time.get_ticks() - self.tongue_time >= 1000:
             self.snake.tongue_visibility = True
+            # self.snake.hiss_sound.play()
             self.snake.tongue_surface_og = self.snake.tongue1_surface_og
 
         elif 2400 > pygame.time.get_ticks() - self.tongue_time >= 2000:
@@ -342,6 +350,7 @@ class Game:
 
         self.apple.add_apple()
         self._running = True
+        self.start_sound.play()
         if self.screen:
             return True
         else:
