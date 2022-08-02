@@ -162,7 +162,7 @@ class Game:
 
         self.font = pygame.font.SysFont('arial', 20)
 
-        self.grid_size = (12, 12)
+        self.grid_size = (10, 10)
 
         self.espace_colour = 'blue'
         self.espace_size = 32
