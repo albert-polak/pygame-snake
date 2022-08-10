@@ -30,11 +30,47 @@ class Snake:
 
         self.knee_right_surface_og = pygame.transform.scale(pygame.image.load('data/knee-1.png').convert_alpha(), (32, 32))
 
+        self.eat1_surface = pygame.transform.scale(pygame.image.load('data/eat-1.png').convert_alpha(), (32, 32))
+        self.eat2_surface = pygame.transform.scale(pygame.image.load('data/eat-2.png').convert_alpha(), (32, 32))
+        self.eat3_surface = pygame.transform.scale(pygame.image.load('data/eat-3.png').convert_alpha(), (32, 32))
+        self.eat4_surface = pygame.transform.scale(pygame.image.load('data/eat-4.png').convert_alpha(), (32, 32))
+        self.eat5_surface = pygame.transform.scale(pygame.image.load('data/eat-5.png').convert_alpha(), (32, 32))
+        self.eat6_surface = pygame.transform.scale(pygame.image.load('data/eat-6.png').convert_alpha(), (32, 32))
+        self.eat7_surface = pygame.transform.scale(pygame.image.load('data/eat-7.png').convert_alpha(), (32, 32))
+        self.eat8_surface = pygame.transform.scale(pygame.image.load('data/eat-8.png').convert_alpha(), (32, 32))
+
+        self.eat1_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-1.png').convert_alpha(), (32, 32))
+        self.eat2_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-2.png').convert_alpha(), (32, 32))
+        self.eat3_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-3.png').convert_alpha(), (32, 32))
+        self.eat4_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-4.png').convert_alpha(), (32, 32))
+        self.eat5_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-5.png').convert_alpha(), (32, 32))
+        self.eat6_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-6.png').convert_alpha(), (32, 32))
+        self.eat7_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-7.png').convert_alpha(), (32, 32))
+        self.eat8_left_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-2-8.png').convert_alpha(), (32, 32))
+
+        self.eat1_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-1.png').convert_alpha(), (32, 32))
+        self.eat2_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-2.png').convert_alpha(), (32, 32))
+        self.eat3_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-3.png').convert_alpha(), (32, 32))
+        self.eat4_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-4.png').convert_alpha(), (32, 32))
+        self.eat5_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-5.png').convert_alpha(), (32, 32))
+        self.eat6_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-6.png').convert_alpha(), (32, 32))
+        self.eat7_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-7.png').convert_alpha(), (32, 32))
+        self.eat8_right_surface = pygame.transform.scale(pygame.image.load('data/knee_eat-1-8.png').convert_alpha(), (32, 32))
+
+        self.eat_left_surface = self.eat4_left_surface.copy()
+        self.eat_right_surface = self.eat4_right_surface.copy()
+
+        self.eat_surface = self.eat4_surface.copy()
+        self.eat_surface_rot = self.eat_surface.copy()
+
+
         self.snake_colour = 'green'
         self.snake_head_colour = 'darkgreen'
         self.direction = 'DOWN'
         self.velocity = 400
         self.tongue_visibility = False
+
+        self.reverse = False
 
         self.hiss_sound = pygame.mixer.Sound('data/sounds/hiss.wav')
 
@@ -124,6 +160,34 @@ class Snake:
         elif (prev_relation[0] == -1 and next_relation[1] == -1) or (next_relation[0] == -1 and prev_relation[1] == -1):
             self.body_surface = pygame.transform.rotate(self.knee_left_surface_og, -90)
 
+    def update_eating_body_orientation(self, prev, curr, next):
+        # if self.direction == 'LEFT':
+        #     self.eat_surface_rot = pygame.transform.rotate(self.eat_surface, 90)
+        #
+        # elif self.direction == 'RIGHT':
+        #     self.eat_surface_rot = pygame.transform.rotate(self.eat_surface, 270)
+        #
+        # elif self.direction == 'UP':
+        #     self.eat_surface_rot = self.eat_surface
+        #
+        # elif self.direction == 'DOWN':
+        #     self.eat_surface_rot = pygame.transform.rotate(self.eat_surface, 180)
+
+        prev_relation = (self.elements[prev][0] - self.elements[curr][0], self.elements[prev][1] - self.elements[curr][1])
+        next_relation = (self.elements[next][0] - self.elements[curr][0], self.elements[next][1] - self.elements[curr][1])
+        if prev_relation[1] == next_relation[1]:
+            self.eat_surface_rot = pygame.transform.rotate(self.eat_surface, 90)
+        elif prev_relation[0] == next_relation[0]:
+            self.eat_surface_rot = self.eat_surface
+        elif (prev_relation[1] == 1 and next_relation[0] == -1) or (next_relation[1] == 1 and prev_relation[0] == -1):
+            self.eat_surface_rot = self.eat_left_surface
+        elif (prev_relation[1] == 1 and next_relation[0] == 1) or (next_relation[1] == 1 and prev_relation[0] == 1):
+            self.eat_surface_rot = self.eat_right_surface
+        elif (prev_relation[0] == 1 and next_relation[1] == -1) or (next_relation[0] == 1 and prev_relation[1] == -1):
+            self.eat_surface_rot = pygame.transform.rotate(self.eat_right_surface, 90)
+        elif (prev_relation[0] == -1 and next_relation[1] == -1) or (next_relation[0] == -1 and prev_relation[1] == -1):
+            self.eat_surface_rot = pygame.transform.rotate(self.eat_left_surface, -90)
+
 
 class Apple:
     def __init__(self, snake, grid_size):
@@ -145,9 +209,15 @@ class Apple:
 
     def check_if_eaten(self):
         if self.apple_pos == self.snake.elements[0]:
+            relation = (self.snake.elements[0][0] - self.snake.elements[1][0], self.snake.elements[0][1] - self.snake.elements[1][1])
+            if relation == (0, -1) or relation == (-1, 0):
+                self.snake.reverse = False
+            else:
+                self.snake.reverse = True
             self.add_apple()
             self.eat_apple_sound.play()
             self.snake.elements.append(self.snake.elements[-1])
+
             return True
         else:
             return False
@@ -186,6 +256,10 @@ class Game:
         self.SCREEN_UPDATE = pygame.USEREVENT
         self.TONGUE_UPDATE = pygame.USEREVENT
         self.tongue_time = pygame.time.get_ticks()
+
+        self.eat_time = 0
+        self.eat_index = []
+
         self.key_buffer = []
 
         self.snake = Snake(self.grid_size)
@@ -257,10 +331,81 @@ class Game:
             if self.snake.tongue_visibility:
                 self.object_screen.blit(self.snake.tongue_surface, rect)
 
+    def eating_animation(self, reverse):
+        if not reverse:
+            if pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8:
+                self.snake.eat_surface = self.snake.eat1_surface
+                self.snake.eat_left_surface = self.snake.eat1_left_surface
+                self.snake.eat_right_surface = self.snake.eat1_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 2:
+                self.snake.eat_surface = self.snake.eat2_surface
+                self.snake.eat_left_surface = self.snake.eat2_left_surface
+                self.snake.eat_right_surface = self.snake.eat2_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 3:
+                self.snake.eat_surface = self.snake.eat3_surface
+                self.snake.eat_left_surface = self.snake.eat3_left_surface
+                self.snake.eat_right_surface = self.snake.eat3_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 4:
+                self.snake.eat_surface = self.snake.eat4_surface
+                self.snake.eat_left_surface = self.snake.eat4_left_surface
+                self.snake.eat_right_surface = self.snake.eat4_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 5:
+                self.snake.eat_surface = self.snake.eat5_surface
+                self.snake.eat_left_surface = self.snake.eat5_left_surface
+                self.snake.eat_right_surface = self.snake.eat5_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 6:
+                self.snake.eat_surface = self.snake.eat6_surface
+                self.snake.eat_left_surface = self.snake.eat6_left_surface
+                self.snake.eat_right_surface = self.snake.eat6_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 7:
+                self.snake.eat_surface = self.snake.eat7_surface
+                self.snake.eat_left_surface = self.snake.eat7_left_surface
+                self.snake.eat_right_surface = self.snake.eat7_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity:
+                self.snake.eat_surface = self.snake.eat8_surface
+                self.snake.eat_left_surface = self.snake.eat8_left_surface
+                self.snake.eat_right_surface = self.snake.eat8_right_surface
+                self.eat_time = pygame.time.get_ticks()
+        else:
+            if pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8:
+                self.snake.eat_surface = self.snake.eat8_surface
+                self.snake.eat_left_surface = self.snake.eat8_left_surface
+                self.snake.eat_right_surface = self.snake.eat8_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 2:
+                self.snake.eat_surface = self.snake.eat7_surface
+                self.snake.eat_left_surface = self.snake.eat7_left_surface
+                self.snake.eat_right_surface = self.snake.eat7_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 3:
+                self.snake.eat_surface = self.snake.eat6_surface
+                self.snake.eat_left_surface = self.snake.eat6_left_surface
+                self.snake.eat_right_surface = self.snake.eat6_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 4:
+                self.snake.eat_surface = self.snake.eat5_surface
+                self.snake.eat_left_surface = self.snake.eat5_left_surface
+                self.snake.eat_right_surface = self.snake.eat5_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 5:
+                self.snake.eat_surface = self.snake.eat4_surface
+                self.snake.eat_left_surface = self.snake.eat4_left_surface
+                self.snake.eat_right_surface = self.snake.eat4_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 6:
+                self.snake.eat_surface = self.snake.eat3_surface
+                self.snake.eat_left_surface = self.snake.eat3_left_surface
+                self.snake.eat_right_surface = self.snake.eat3_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity/8 * 7:
+                self.snake.eat_surface = self.snake.eat2_surface
+                self.snake.eat_left_surface = self.snake.eat2_left_surface
+                self.snake.eat_right_surface = self.snake.eat2_right_surface
+            elif pygame.time.get_ticks() - self.eat_time < self.snake.velocity:
+                self.snake.eat_surface = self.snake.eat1_surface
+                self.snake.eat_left_surface = self.snake.eat1_left_surface
+                self.snake.eat_right_surface = self.snake.eat1_right_surface
+                self.eat_time = pygame.time.get_ticks()
+
     def draw_snake(self):
 
         self.snake.update_head_orientation()
         self.snake.update_tail_orientation()
+
 
         for idx, element in enumerate(self.snake.elements):
 
@@ -273,19 +418,25 @@ class Game:
                 rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
                 # rect = rect.inflate(-5, -5)
                 # pygame.draw.rect(self.object_screen, self.snake.snake_colour, rect)
-
-                if idx == len(self.snake.elements) - 1:
-
-                    self.object_screen.blit(self.snake.tail_surface, rect)
-                elif idx == len(self.snake.elements) - 2 and self.snake.eaten_flag:
-                    self.snake.update_tail2_orientation()
-                    x, y = element
-                    rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
-                    self.object_screen.blit(self.snake.tail_surface, rect)
+                if (x, y) in self.eat_index:
+                    if idx + 1 < len(self.snake.elements):
+                        self.snake.update_eating_body_orientation(idx - 1, idx, idx + 1)
+                    self.object_screen.blit(self.snake.eat_surface_rot, rect)
+                    if (x, y) == self.snake.elements[len(self.snake.elements)-1]:
+                        index = self.eat_index.index((x, y))
+                        self.eat_index.pop(index)
                 else:
-                    self.snake.update_body_orientation(idx - 1, idx, idx + 1)
+                    if idx == len(self.snake.elements) - 1:
+                        self.object_screen.blit(self.snake.tail_surface, rect)
+                    elif idx == len(self.snake.elements) - 2 and self.snake.eaten_flag:
+                        self.snake.update_tail2_orientation()
+                        x, y = element
+                        rect = pygame.Rect(x * (self.espace_size + self.espace_dist), y * (self.espace_size + self.espace_dist), self.espace_size, self.espace_size)
+                        self.object_screen.blit(self.snake.tail_surface, rect)
+                    else:
+                        self.snake.update_body_orientation(idx - 1, idx, idx + 1)
 
-                    self.object_screen.blit(self.snake.body_surface, rect)
+                        self.object_screen.blit(self.snake.body_surface, rect)
 
     def draw_apple(self):
         x, y = self.apple.apple_pos
@@ -324,6 +475,7 @@ class Game:
         self.object_screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (-120, -100))
         self.screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (0, 0))
 
+        # self.eating_animation(self.snake.reverse)
         self.draw_map()
         self.draw_snake()
         self.change_tongue()
@@ -365,6 +517,8 @@ class Game:
             self.snake.update_snake_pos()
             if self.apple.check_if_eaten():
                 self.snake.eaten_flag = True
+                self.eat_time = pygame.time.get_ticks()
+                self.eat_index.append(self.snake.elements[0])
                 self.snake.velocity -= 10
                 if self.snake.velocity <= 0:
                     self.snake.velocity = 1
