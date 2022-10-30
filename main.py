@@ -469,11 +469,12 @@ class Game:
     def on_loop(self):
         pygame.display.update()
         # self.object_screen.fill('BLACK')
-        self.object_screen.convert_alpha()
+        self.object_screen = self.object_screen.convert_alpha()
         self.object_screen.fill((0, 0, 0, 0))
         # self.object_screen.blit(self.bg_surface, (-100, -100))
-        self.object_screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (-120, -100))
+        # self.object_screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (-120, -100))
         self.screen.blit(pygame.transform.scale(self.bg_surface, self.screen.get_rect().size), (0, 0))
+        # self.screen.blit(self.bg_surface,  (0, 0))
 
         # self.eating_animation(self.snake.reverse)
         self.draw_map()
